@@ -1,0 +1,780 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reset.css">
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/slides.css">
+
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/monokai.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="theme-font-montserrat theme-color-white-blue" style="width: 100%; height: 100%;">
+    <div class="reveal">
+        <div class="slides">
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 275px; top: 194px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;">
+                        <h1>WebAssembly: A Gentle Introduction</h1>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 600px; left: 381px; top: 406px;">
+                    <div class="sl-block-content" style="z-index: 12;">
+                        <p>Chin Ying - Software Engineer</p>
+
+                        <p>@ Open Government Products</p>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 33px; height: 33px; left: 201px; top: 534px;">
+                    <div class="sl-block-content" style="z-index: 13;"><img data-natural-width="439" data-natural-height="439" style="" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6517391/github-logo.svg"></div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 156px; left: 245px; top: 531px;">
+                    <div class="sl-block-content" style="z-index: 14;">
+                        <p style="text-align: left;">@chinying</p>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 35px; height: 35px; left: 199px; top: 575px;">
+                    <div class="sl-block-content" style="z-index: 15;"><img data-natural-width="112" data-natural-height="112" style="" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6517393/twitter.svg"></div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 156px; left: 245px; top: 570px;">
+                    <div class="sl-block-content" style="z-index: 17;">
+                        <p style="text-align: left;">@seahcy</p>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 151px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10;">
+                        <h2>What this talk is NOT about</h2>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 307px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;" dir="ui">
+                        <ul>
+                            <li><span style="font-size:1.4em">Deep dive into WASM spec</span></li>
+                            <li><span style="font-size:1.4em">Teach you to write WASM</span></li>
+                            <li><span style="font-size:1.4em">A sales pitch for WASM</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 151px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10;">
+                        <h2>Overview</h2>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 307px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;" dir="ui">
+                        <ul>
+                            <li><span style="font-size:42px">What is WebAssembly</span></li>
+                            <li><span style="font-size:42px">What it's good at</span></li>
+                            <li><span style="font-size:1.4em">Limitations</span></li>
+                            <li><span style="font-size:1.4em">Demo code</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section class="stack">
+                <section data-background-transition="slide">
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 232px; top: 91px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2><span style="font-size:0.9em">Introduction to WebAssembly</span></h2>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 216px; height: auto;">
+                        <div class="sl-block-content fragment" style="z-index: 12;" data-fragment-index="0">
+                            <blockquote>
+                                <p class="">WebAssembly (abbreviated Wasm) is a<strong> binary instruction format</strong> for a <strong>stack-based virtual machine</strong>. Wasm is designed as a <strong>portable target for compilation </strong>of <strong>high-level languages like C/C++/Rust</strong>, enabling deployment on the web for client and server applications.</p>
+                            </blockquote>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 806px; height: 260px; left: 237px; top: 374px;">
+                        <div class="sl-block-content fragment" style="z-index: 13;" data-fragment-index="1"><img style="" data-natural-width="1210" data-natural-height="390" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6509979/Screenshot_2019-08-29_at_11.01.12_PM.png"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 600px; left: 588px; top: 450px;">
+                        <div class="sl-block-content fragment" style="z-index: 10;" data-fragment-index="0">
+                            <p>- webassembly.org</p>
+                        </div>
+                    </div>
+                </section>
+                <section data-background-transition="slide">
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 99px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2><span style="font-size:0.9em">Introduction to WebAssembly</span></h2>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 208px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 12;">
+                            <ul>
+                                <li class="fragment" data-fragment-index="0">
+                                    <span style="color:#D3D3D3">WebAssembly (abbreviated <em>Wasm</em>) is a<strong> </strong></span><strong>binary instruction format</strong><span style="color:#D3D3D3"> for a <strong>stack-based virtual machine</strong>. Wasm is designed as a <strong>portable target for compilation </strong>of <strong>high-level languages like C/C++/Rust</strong>, enabling deployment on the web for client and server applications.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 686px; height: 655px; left: 320px; top: 302px;">
+                        <div class="sl-block-content fragment" style="z-index: 13;" data-fragment-index="1"><img style="" data-natural-width="423" data-natural-height="404" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6509952/Screenshot_from_2019-09-06_00-22-45.png"></div>
+                    </div>
+                </section>
+                <section data-background-transition="slide">
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 243px; top: 105px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 12;">
+                            <h2><span style="font-size:0.9em">Introduction to WebAssembly</span></h2>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 246px; top: 264px; height: auto;" data-locked="true">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <ul>
+                                <li class="visible">
+                                    <span style="color:#D3D3D3">WebAssembly (abbreviated <em>Wasm</em>) is a<strong> binary instruction format</strong> for a </span><strong>stack-based virtual machine</strong><span style="color:#D3D3D3">. Wasm is designed as a <strong>portable target for compilation </strong>of <strong>high-level languages like C/C++/Rust</strong>, enabling deployment on the web for client and server applications.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 600px; left: 552px; top: 518px;">
+                        <div class="sl-block-content" style="z-index: 14;">
+                            <ol>
+                                <li class="fragment" data-fragment-index="2"><strong>POP 10</strong></li>
+                                <li class="fragment" data-fragment-index="2"><strong>POP 7</strong></li>
+                                <li class="fragment" data-fragment-index="3"><strong>ADD 10, 7, result</strong></li>
+                                <li class="fragment" data-fragment-index="4"><strong>PUSH result</strong></li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 400px; left: 200px; top: 565px;" data-locked="true">
+                        <div class="sl-block-content fragment" style="z-index: 13;" data-fragment-index="1">
+                            <p><strong>FUNC ADD (X, Y) -&gt; RESULT</strong></p>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="shape" style="min-width: 4px; min-height: 4px; width: 806px; height: 249px; left: 246px; top: 255px;" data-locked="true">
+                        <div class="sl-block-content fragment" data-shape-type="rect" data-shape-fill-color="rgb(255, 255, 255)" data-shape-stretch="true" style="z-index: 15;" data-fragment-index="0"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 806 249">
+                                <rect width="806" height="249" rx="0" ry="0" class="shape-element" fill="rgb(255, 255, 255)"></rect>
+                            </svg></div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 708px; height: 208px; left: 287px; top: 257px;">
+                        <div class="sl-block-content fragment" style="z-index: 16;" data-fragment-index="0"><img style="" data-natural-width="708" data-natural-height="208" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6527843/stackadd0.svg"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 708px; height: 208px; left: 287px; top: 257px;">
+                        <div class="sl-block-content fragment" style="z-index: 17;" data-fragment-index="2"><img style="" data-natural-width="708" data-natural-height="208" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6527866/stackadd1.svg"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 708px; height: 208px; left: 287px; top: 257px;">
+                        <div class="sl-block-content fragment" style="z-index: 18;" data-fragment-index="3"><img data-natural-width="708" data-natural-height="208" style="" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6527868/stackadd2.svg"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 708px; height: 208px; left: 287px; top: 257px;">
+                        <div class="sl-block-content fragment" style="z-index: 19;" data-fragment-index="3"><img style="" data-natural-width="708" data-natural-height="208" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6527879/stackadd3.svg"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 708px; height: 208px; left: 287px; top: 257px;">
+                        <div class="sl-block-content fragment" style="z-index: 20;" data-fragment-index="4"><img style="" data-natural-width="708" data-natural-height="208" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6527880/stackadd4.svg"></div>
+                    </div>
+                </section>
+                <section data-background-transition="slide">
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 236px; top: 92px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 10;">
+                            <h2><span style="font-size:0.9em">Introduction to WebAssembly</span></h2>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 239px; top: 251px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <ul>
+                                <li>
+                                    <span style="color:#D3D3D3">WebAssembly (abbreviated <em>Wasm</em>) is a<strong> binary instruction format</strong> for a <strong>stack-based virtual machine</strong>. Wasm is designed as a </span><strong>portable</strong><span style="color:#D3D3D3"><strong> target for compilation </strong>of <strong>high-level languages like C/C++/Rust</strong>, enabling deployment on the web for client and server applications.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section data-background-transition="slide">
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 236px; top: 61px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 10;">
+                            <h2><span style="font-size:0.9em">Introduction to WebAssembly</span></h2>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 239px; top: 220px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <ul>
+                                <li>
+                                    <span style="color:#D3D3D3">WebAssembly (abbreviated <em>Wasm</em>) is a<strong> binary instruction format</strong> for a <strong>stack-based virtual machine</strong>. Wasm is designed as a <strong>portable </strong></span><strong>target for compilation</strong><span style="color:#D3D3D3"><strong> </strong>of </span><strong>high-level languages like C/C++/Rust</strong><span style="color:#D3D3D3">, enabling deployment on the web for client and server applications.</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 246px; top: 85px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;">
+                        <h2>Why WASM</h2>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 251px; top: 216px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 12;" dir="ui">
+                        <ul>
+                            <li class="fragment" data-fragment-index="0" style="color:rgb(202, 202, 202); text-align:left">
+                                <span style="color:#000000">Speed / performance</span><span style="color:#000000">​</span>​</li>
+                            <li class="fragment" data-fragment-index="1" style="color:rgb(202, 202, 202); text-align:left"><span style="color:#000000">No longer limited by JS in the browser</span></li>
+                            <li class="fragment" data-fragment-index="2" style="color:rgb(202, 202, 202); text-align:left"><span style="color:#000000">Elimination of network calls</span></li>
+                            <li class="fragment" data-fragment-index="3" style="color:rgb(202, 202, 202); text-align:left">
+                                <span style="color:#000000">Porting applications to browser</span>
+                                <ul>
+                                    <li>
+                                        <a href="https://blogs.autodesk.com/autocad/autocad-web-app-google-io-2018/" target="_blank">AutoCAD</a>&nbsp;<span style="color:#000000">- desktop application to browser</span>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section class="stack">
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 240px; top: 40px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2>Cluster-fu</h2>
+                        </div>
+                    </div>
+
+
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 800px; left: 240px; top: 144px;">
+                        <div class="sl-block-content" style="z-index: 12;" dir="ui">
+                            <ul>
+                                <li class="fragment" data-fragment-index="0">Born out of Beeline
+                                    <ul>
+                                        <li>Online marketplace for crowdsourced bus rides&nbsp;</li>
+                                    </ul>
+                                </li>
+                                <li class="fragment" data-fragment-index="1">Problem: Planning routes
+                                    <ul>
+                                        <li>Difficult to view demand for bus routes from an excel sheet</li>
+                                    </ul>
+                                </li>
+                                <li class="fragment" data-fragment-index="2">Solution: Origin-destination cluster visualisation dashboard (<a href="https://cluster-fu.data.gov.sg" target="_blank">https://cluster-fu.data.gov.sg</a>)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 240px; top: 40px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2>Cluster-fu</h2>
+                        </div>
+                    </div>
+
+
+
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 923px; height: 472px; left: 197px; top: 169px;">
+                        <div class="sl-block-content" style="z-index: 13;"><img style="" data-natural-width="2500" data-natural-height="1278" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6524257/Screen_Shot_2019-09-10_at_7.05.58_PM.png"></div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 240px; top: 40px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 10;">
+                            <h2>Cluster-fu</h2>
+                        </div>
+                    </div>
+
+
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 600px; left: -10px; top: 562px;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <p>3 seconds to cluster ~17k points</p>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="height: auto; width: 600px; left: 667px; top: 538px;">
+                        <div class="sl-block-content" style="z-index: 12;">
+                            <p>75ms to run WASM function</p>
+
+                            <p>~40x speed improvement</p>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 687px; height: 293px; left: 580px; top: 225px;">
+                        <div class="sl-block-content" style="z-index: 13;"><img style="" data-natural-width="1482" data-natural-height="632" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6536004/Screen_Shot_2019-09-13_at_11.56.48_AM.png"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 683px; height: 92px; left: -138px; top: 326px;">
+                        <div class="sl-block-content" style="z-index: 14;"><img style="" data-natural-width="1410" data-natural-height="190" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6536318/Screen_Shot_2019-09-13_at_3.11.19_PM.png"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 414px; left: 20px; top: 144px;">
+                        <div class="sl-block-content" style="z-index: 15;">
+                            <h3>Before</h3>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 414px; left: 753px; top: 144px;">
+                        <div class="sl-block-content" style="z-index: 17;">
+                            <h3>After</h3>
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section class="stack">
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 240px; top: 89px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 10;">
+                            <h2><span style="font-size:0.9em">Can I use WASM?</span></h2>
+                        </div>
+                    </div>
+
+
+
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 1174px; height: 307px; left: 53px; top: 174px;">
+                        <div class="sl-block-content" style="z-index: 11;"><img style="" data-natural-width="2500" data-natural-height="654" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6511665/caniuse.png"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 638px; left: 330px; top: 504px;">
+                        <div class="sl-block-content" style="z-index: 14;">
+                            <p><a href="https://caniuse.com/#search=webassembly" target="_blank">https://caniuse.com/#search=webassembly</a></p>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 72px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2>Language compatibility</h2>
+                        </div>
+                    </div>
+
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; width: 600px; left: 337px; top: 168px;">
+                        <div class="sl-block-content" style="z-index: 12;">
+                            <ul>
+                                <li><a href="https://github.com/appcypher/awesome-wasm-langs" target="_blank">List of compatible languages</a></li>
+                                <li>Dependent on compilation toolchain
+                                    <ul>
+                                        <li>&nbsp;compiler that compiles language to .wasm</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 66px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2>Loading WASM</h2>
+                        </div>
+                    </div>
+
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; min-width: 30px; min-height: 30px; width: 600px; left: 337px; top: 162px;">
+                        <div class="sl-block-content" style="z-index: 12;">
+                            <ul>
+                                <li>JS API for loading WASM in browsers</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="code" style="min-width: 30px; min-height: 30px; width: 778px; height: 467px; left: 248px; top: 209px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 13; font-size: 150%;">
+                            <pre class="javascript"><code data-line-numbers="">fetch('./your-module-here.wasm')
+  .then(r =&gt; r.arrayBuffer())
+  .then(WebAssembly.instantiate)
+  .then(({module, instance}) =&gt; {
+  	// your code here
+  })
+  </code></pre>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 144px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h1>Demo / Live coding</h1>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="code" style="min-width: 30px; min-height: 30px; width: 977px; height: 415px; left: 189px; top: 250px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 11; font-size: 200%;">
+                            <pre class="javascript"><code data-line-numbers="">fetch('http://localhost:8888/add.wasm')
+  .then(r =&gt; r.arrayBuffer())
+  .then(WebAssembly.instantiate) // module instance
+  .then(({module, instance}) =&gt; {
+	window.demo = {module, instance} // assign to window var
+  })
+  
+// roughly const demo = require('./add.wasm')
+
+window.demo.instance.exports</code></pre>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="code" style="min-width: 30px; min-height: 30px; width: 587px; height: 134px; left: 347px; top: 52px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 12; font-size: 200%;">
+                            <pre class="cpp"><code data-line-numbers="">int add(int x, int y) {
+    return x + y;
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="code" style="width: 903px; height: 378px; left: 189px; top: 242px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 10; font-size: 200%;">
+                            <pre class="javascript"><code data-line-numbers="">fetch('http://localhost:8888/hello.wasm')
+  .then(r =&gt; r.arrayBuffer())
+  .then(WebAssembly.instantiate)
+  .then(({module, instance}) =&gt; {
+    window.hello = {module, instance}
+  })
+
+hello.instance.exports</code></pre>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="code" style="width: 587px; height: 165px; left: 347px; top: 46px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 11; font-size: 200%;">
+                            <pre class="cpp"><code data-line-numbers="">char *msg = "hello world";
+char *hello() {
+    return msg;
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section class="stack">
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 236px; top: 110px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 10;">
+                            <h2>Memory in WASM</h2>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="width: 989px; left: 145px; top: 246px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;" dir="ui">
+                            <ul>
+                                <li class="fragment" data-fragment-index="0" style="color:rgb(202, 202, 202)">
+                                    <p><span style="color:#000000">Linear memory - single contiguous block of bytes</span></p>
+
+                                    <ul>
+                                        <li style="color:rgb(202, 202, 202)">
+                                            <p><span style="color:#000000">represented by Javascript<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer" target="_blank"> </a></span><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ArrayBuffer" target="_blank"><span style="color:#000000">ArrayBuffer</span></a><span style="color:#000000"> in browser</span></p>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="fragment" data-fragment-index="1" style="color:rgb(202, 202, 202)">
+                                    <p><span style="color:#000000">Sandboxed, every instance is isolated / exclusive</span></p>
+
+                                    <ul>
+                                        <li style="color:rgb(202, 202, 202)">
+                                            <p><span style="color:#000000">​ie. Code &amp; call stack not accessible by other WASM instances</span></p>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 244px; top: 95px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2>Glue code</h2>
+                        </div>
+                    </div>
+
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; width: 600px; left: 344px; top: 184px;">
+                        <div class="sl-block-content" style="z-index: 12;">
+                            <ul>
+                                <li class="fragment" data-fragment-index="0" style="color:rgb(202, 202, 202)">
+                                    <p><span style="color:#000000">WASM only supports numeric types: i32, i64, f32, f64</span></p>
+                                </li>
+                                <li class="fragment" data-fragment-index="0" style="color:rgb(202, 202, 202)">
+                                    <p><span style="color:#000000">Conduct <strong>pointer arithmetic</strong> to access other types</span></p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 605px; height: 357px; left: 359px; top: 363px;">
+                        <div class="sl-block-content fragment" style="z-index: 13;" data-fragment-index="1"><img style="" data-natural-width="2287" data-natural-height="1350" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6511673/04_wasm_bindgen_02.png"></div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 685px; height: 357px; left: 279px; top: 363px;">
+                        <div class="sl-block-content fragment" style="z-index: 14;" data-fragment-index="2"><img style="" data-natural-width="2500" data-natural-height="1303" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6511713/05_wasm_bindgen_2.png"></div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 72px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 10;">
+                            <h2>Existing tooling</h2>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 265px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <ul>
+                                <li><a href="https://github.com/rustwasm/wasm-pack" target="_blank">https://github.com/rustwasm/wasm-pack</a></li>
+                                <li><a href="https://github.com/emscripten-core/emscripten" target="_blank">https://github.com/emscripten-core/emscripten</a></li>
+                                <li>Such tools generate the glue code (bindings) for you
+                                    <ul>
+                                        <li>In the form of a .js file</li>
+                                        <li>ie. you call the .js file instead of the wasm module</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="code" style="width: 903px; height: 378px; left: 189px; top: 268px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 10; font-size: 200%;">
+                            <pre class="javascript"><code data-line-numbers="">fetch('http://localhost:8888/hello.wasm')
+  .then(r =&gt; r.arrayBuffer())
+  .then(WebAssembly.instantiate)
+  .then(({module, instance}) =&gt; {
+    window.hello = {module, instance}
+  })
+
+hello.instance.exports.memory</code></pre>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="code" style="width: 587px; height: 165px; left: 344px; top: 72px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 11; font-size: 200%;">
+                            <pre class="cpp"><code data-line-numbers="">char *msg = "hello world";
+char *hello() {
+    return msg;
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="iframe" style="min-width: 30px; min-height: 30px; width: 1288px; height: 720px; left: -4px; top: 0px;">
+                        <div class="sl-block-content" style="z-index: 11;"><iframe webkitallowfullscreen="" mozallowfullscreen="" allowfullscreen="" sandbox="allow-forms allow-scripts allow-popups allow-same-origin allow-pointer-lock" data-preload="true" data-lazy-loaded="" data-src="https://mbebenita.github.io/WasmExplorer/"></iframe></div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 1075px; height: 624px; left: 103px; top: 48px;">
+                        <div class="sl-block-content" style="z-index: 11;"><img style="" data-natural-width="1956" data-natural-height="1136" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6520103/wasm-studio-hello.png"></div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="code" style="width: 1218px; height: 393px; left: 30px; top: 161px;">
+                        <div class="sl-block-content notranslate" data-highlight-theme="solarized-light" data-code-frame="none" style="z-index: 10; font-size: 200%;" data-code-wrap="true">
+                            <pre class="javascript"><code data-line-numbers="">var linearmem = hello.instance.exports.memory
+var start = 16
+var offset = "hello world".length
+var buffer = new Uint8Array(linearmem.buffer, start, offset)
+var str = ""
+for (let i = 0; i&lt;buffer.length; i++) {
+  str += (String.fromCharCode(buffer[i]))
+}</code></pre>
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section class="stack">
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 234px; top: 55px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2>Limitations</h2>
+                        </div>
+                    </div>
+
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; width: 600px; left: 334px; top: 147px;">
+                        <div class="sl-block-content" style="z-index: 12; color: rgb(0, 0, 0);">
+                            <ul style="font-size:30px">
+                                <li>No access to DOM</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="sl-block" data-block-type="image" style="min-width: 4px; min-height: 4px; width: 715px; height: 350px; left: 283px; top: 257px;">
+                        <div class="sl-block-content" style="z-index: 13;"><img style="" data-natural-width="715" data-natural-height="350" data-lazy-loaded="" data-src="https://s3.amazonaws.com/media-p.slid.es/uploads/1120229/images/6511678/wasm_interfacing_with_js.png"></div>
+                    </div>
+                </section>
+                <section>
+                    <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 41px; height: auto;">
+                        <div class="sl-block-content" style="z-index: 11;">
+                            <h2>Limitations</h2>
+                        </div>
+                    </div>
+
+
+                    <div class="sl-block" data-block-type="text" style="height: auto; width: 844px; left: 218px; top: 144px;">
+                        <div class="sl-block-content" style="z-index: 12; color: rgb(0, 0, 0);">
+                            <ul style="font-size:30px">
+                                <li class="fragment" data-fragment-index="0">Module size
+                                    <ul>
+                                        <li class="fragment" data-fragment-index="0">everything is loaded in memory</li>
+                                        <li class="fragment" data-fragment-index="0">shipping 50MB over network is not ideal</li>
+                                    </ul>
+                                </li>
+                                <li class="fragment" data-fragment-index="1">
+                                    <a href="https://rustwasm.github.io/2018/10/24/multithreading-rust-and-wasm.html" target="_blank">Threading - limited support</a>
+                                    <ul>
+                                        <li class="fragment" data-fragment-index="1">SharedArrayBuffer - had to be disabled because of Spectre (security vulnerabilities)</li>
+                                    </ul>
+                                </li>
+                                <li class="fragment" data-fragment-index="2">Garbage collection (GC) - not available in MVP&nbsp;</li>
+                                <li class="fragment" data-fragment-index="3">Debugging across languages
+                                    <ul>
+                                        <li class="fragment" data-fragment-index="3">Write code in one language which errors in another</li>
+                                        <li>What kinds of tooling are available?</li>
+                                    </ul>
+                                </li>
+                                <li class="fragment" data-fragment-index="4">Security concerns
+                                    <ul>
+                                        <li class="fragment" data-fragment-index="4">harder to inspect binary files</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 300px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10; text-align: left;">
+                        <h1>What happens to JS?</h1>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 226px; top: 77px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10;">
+                        <h2>Best of both worlds</h2>
+                    </div>
+                </div>
+
+
+                <div class="sl-block" data-block-type="text" style="height: auto; width: 596px; left: 342px; top: 222px;">
+                    <div class="sl-block-content" style="z-index: 11; color: rgb(0, 0, 0);">
+                        <ul>
+                            <li>Leverage JS ecosystem
+                                <ul>
+                                    <li>JS has libraries for DOM manipulation (eg. Vuejs, React, etc.)&nbsp;</li>
+                                </ul>
+                            </li>
+                            <li>Use WASM for computation</li>
+                            <li>Augment each other, not competitors</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 234px; top: 72px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10;">
+                        <h2>Should I use WASM?</h2>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 234px; top: 265px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;">
+                        <ul>
+                            <li>Not supported on IE</li>
+                            <li>Do you have a need for it?
+                                <ul>
+                                    <li>I/O vs CPU bound
+                                        <ul>
+                                            <li>Remember interfacing with DOM is slow</li>
+                                            <li>Loading WASM module is an overhead</li>
+                                        </ul>
+                                    </li>
+                                    <li>Profile &amp; identify bottlenecks</li>
+                                </ul>
+                            </li>
+                            <li>Community support
+                                <ul>
+                                    <li>Newer technology = uncharted territories</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 228px; top: 74px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10;">
+                        <h2>Personal Takeaway</h2>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="width: 825px; left: 228px; top: 282px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;">
+                        <ul>
+                            <li>Don't be afraid of getting your hands dirty</li>
+                            <li>Break things and you'll eventually know how they work</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 228px; top: 74px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10;">
+                        <h2>Acknowledgments</h2>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="width: 825px; left: 226px; top: 282px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;">
+                        <ul>
+                            <li>OGP</li>
+                            <li>Lin Clark - @codecartoons
+                                <ul>
+                                    <li><a href="https://hacks.mozilla.org/2017/02/a-cartoon-intro-to-webassembly/" target="_blank">https://hacks.mozilla.org/2017/02/a-cartoon-intro-to-webassembly/</a></li>
+                                </ul>
+                            </li>
+                            <li>Nick Fitzgerald - @fitzgen
+                                <ul>
+                                    <li><a href="https://hacks.mozilla.org/2018/01/oxidizing-source-maps-with-rust-and-webassembly/" target="_blank">https://hacks.mozilla.org/2018/01/oxidizing-source-maps-with-rust-and-webassembly/</a></li>
+                                </ul>
+                            </li>
+                            <li>Sarah Lim - @soylentqueen</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 806px; left: 237px; top: 203px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;">
+                        <h1>Questions</h1>
+
+                        <h1>? Answer</h1>
+
+                        <h1>: Thanks</h1>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <div class="sl-block" data-block-type="text" style="width: 1076px; left: 102px; top: 194px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 10;">
+                        <h1>We're hiring</h1>
+                    </div>
+                </div>
+                <div class="sl-block" data-block-type="text" style="width: 1076px; left: 102px; top: 291px; height: auto;">
+                    <div class="sl-block-content" style="z-index: 11;">
+                        <h2>recruiting@open.gov.sg</h2>
+                    </div>
+                </div>
+            </section>
+            <section></section>
+        </div>
+    </div>
+</div>
+
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true }
+				],
+				width: 1280,
+				height: 720,
+				transition: "slide",
+				backgroundTransition: "slide",
+				center: false
+			});
+		</script>
+	</body>
+</html>
